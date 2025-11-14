@@ -22,13 +22,19 @@ public class BYCorrection implements CorrectionProcedure {
     harmonic = harmonic * total_comparisons;
 
     double[] newPvalues = new double[total_comparisons];
-    for (int i = 0; i < total_comparisons; i++) {
-      double pvalue = unadjusted[i];
-      if (pvalue <= (alpha * ((double) (i + 1) / harmonic))) {
-        newPvalues[(int) positions[i]] = 0;
-      } else {
-        newPvalues[(int) positions[i]] = 1;
+    int k = -1;
+    for (int i = total_comparisons - 1; i >= 0; i--) {
+      double threshold = alpha * ((double) (i + 1) / harmonic);
+      if (unadjusted[i] <= threshold) {
+        k = i;
+        break;
       }
+    }
+    if (k == -1) {
+      for (int i = 0; i < total_comparisons; i++) newPvalues[(int) positions[i]] = 1;
+    } else {
+      for (int i = 0; i <= k; i++) newPvalues[(int) positions[i]] = 0;
+      for (int i = k + 1; i < total_comparisons; i++) newPvalues[(int) positions[i]] = 1;
     }
 
     return newPvalues;

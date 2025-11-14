@@ -15,15 +15,21 @@ public class BHCorrection implements CorrectionProcedure {
     ParallelArrays.sort(unadjusted, positions, true);
 
     double[] newPvalues = new double[total_comparisons];
-    for (int i = 0; i < unadjusted.length; i++) {
-      double pvalue = unadjusted[i];
-      if (pvalue <= (alpha * ((double) (i + 1) / total_comparisons))) {
-        newPvalues[(int) positions[i]] = 0;
-      } else {
-        newPvalues[(int) positions[i]] = 1;
+    // Step-up: find largest k s.t. p_(k) <= (k/m)*alpha and reject all i <= k.
+    int k = -1;
+    for (int i = total_comparisons - 1; i >= 0; i--) {
+      double threshold = alpha * ((double) (i + 1) / total_comparisons);
+      if (unadjusted[i] <= threshold) {
+        k = i;
+        break;
       }
     }
-
+    if (k == -1) {
+      for (int i = 0; i < total_comparisons; i++) newPvalues[(int) positions[i]] = 1; // accept all
+    } else {
+      for (int i = 0; i <= k; i++) newPvalues[(int) positions[i]] = 0; // reject 1..k
+      for (int i = k + 1; i < total_comparisons; i++) newPvalues[(int) positions[i]] = 1; // accept rest
+    }
     return newPvalues;
   }
 }

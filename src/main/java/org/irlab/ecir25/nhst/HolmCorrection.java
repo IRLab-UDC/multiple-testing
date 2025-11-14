@@ -15,10 +15,15 @@ public class HolmCorrection implements CorrectionProcedure {
     double[] newPvalues = new double[total_comparisons];
     for (int i = 0; i < total_comparisons; i++) {
       double pvalue = unadjusted[i];
-      if (pvalue <= (alpha / (total_comparisons - i))) {
+      double threshold = alpha / (total_comparisons - i);
+      if (pvalue <= threshold) {
         newPvalues[(int) positions[i]] = 0;
       } else {
         newPvalues[(int) positions[i]] = 1;
+        for (int j = i + 1; j < total_comparisons; j++) {
+          newPvalues[(int) positions[j]] = 1;
+        }
+        break;
       }
     }
     return newPvalues;
